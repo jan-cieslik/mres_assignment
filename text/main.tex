@@ -1,0 +1,55 @@
+\documentclass[12pt,a4paper]{article}
+\bibliographystyle{ieeetr}
+\linespread{1.25}
+\usepackage{graphicx}
+\usepackage{ragged2e}
+\usepackage{geometry}
+\usepackage{marvosym}
+\usepackage{wrapfig}
+\usepackage{subfig}
+\usepackage{textcomp}
+\usepackage{hyperref}
+\usepackage{rotating}
+ \geometry{
+ a4paper,
+ %total={170mm,257mm},
+ left=35mm,
+ right=25mm,
+ top=25mm,
+ bottom=25mm,
+ } 
+\input{scripts/wordcount.tex}
+\begin{document}
+\pagenumbering{gobble}
+\begin{titlepage}
+	\centering
+	{Imperial College London - Cancer \& Surgery}\\
+	\vspace{12cm}
+	{SPIB - A potential biomarker in breast cancer?}\\
+	\vspace{3cm}
+	Jan-Philipp Cieslik (CID 02139878) \\
+    
+\end{titlepage}
+
+\newpage
+\justifying
+\pagenumbering{arabic} 
+
+%\summarycounttrue
+
+\input{chapters/introduction.tex}
+
+\input{chapters/methods.tex}
+
+\input{chapters/results.tex}
+
+\input{chapters/conclusion.tex}
+
+\input{chapters/figures.tex}
+
+\newpage
+\bibliography{literature}  
+
+\newpage
+\pagenumbering{gobble} 
+\end{document}

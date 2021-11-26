@@ -1,3 +1,6 @@
+# Download Folder
+data/download/*
+
 ## Core latex/pdflatex auxiliary files:
 *.aux
 *.lof
