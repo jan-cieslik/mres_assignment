@@ -1,6 +1,28 @@
 % !TEX root = ../main.tex
 \section{Methods}
 \countem
-...
+
+\subsection{Data Sources}
+
+The Cancer Genome Atlas (TCGA) dataset for breast cancer (BRCA)\cite{Ciriello2015} was acquired from the Xena platform \cite{Goldman2018} and from cBioPortal \cite{Cerami2012}.
+
+\subsection{Identification of a possible novel prognostic marker}
+A multivariate Cox proportional hazards regression model was created with data from 1218 breast cancer patients.
+Over all survival was defined as the dependent variable and mRNA z-scores (as determined by RNA sequencing from the primary tumour) together with age and tumour stage (I/II as low; III/IV as high) as the independent variables.
+The calculated p-values were corrected with the false discovery rate (FDR) method and are shown as q-values.
+
+\subsection{Survival Analysis}
+
+The patient population was divided into SPIB-high and SPIB-low divided by the median of the SPIB mRNA expression.
+A logrank test and an associated Kaplan-Meier plot were generated for the two subpopulations.
+
+\subsection{Methylation and mRNA Expression Correlation}
+
+Methylation beta-values from the Illumina HumanMethylation450 BeadChip were correlated against the mRNA z-scores utilizing the spearman's rank correlation.
+
+\subsection{Copy Number and mRNA Expression}
+
+Putative copy-number alteration data (GISTIC2) were obtained in an already transformed format ordering the data in five levels from deep deletion (-2) to high-level amplification (+2).
+The data was then correlated (spearman's rank correlation) against the mRNA z-scores.
 \endcountem \\
-(Methods word count: \thewordcount{)
+(Methods word count: \thewordcount{})
