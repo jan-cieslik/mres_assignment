@@ -1,8 +1,22 @@
 % !TEX root = ../main.tex
 \section{Results}
 \countem
+
 \subsection{Identification of a possible novel prognostic marker}
-In a multivariate Cox analysis in 1218 breast cancer patients I could identify 2078 significantly (q-value < 0.05) associated genes with the overall survival.
-SPIB was associated with a beneficial harzard ratio (HR: 0.91; q-value: 2.82\%).
-\endcountem \\
+
+In a multivariate Cox analysis in 1218 breast cancer patients I could identify 2078 significantly (q-value < 0.05) associated genes (mRNA expression) with the overall survival.
+SPIB was associated with a beneficial harzard ratio (HR: 0.91; q-value: 2.82\%; Fig.~\ref{km_plot}).
+Further, patients overexpressing SPIB have an overall median survival of 130 months, while low expressing patients survive for a median of 112 months (logrank p: 0.01; Fig.~\ref{km_plot}).
+
+\subsection{Methlyation and mRNA Expression (cg19387862)}
+
+Next, I focussed on the regulation of SPIB through methylation.
+Through spearman correlation, a significant negative association between methylation of SPIB and mRNA expression levels could be shown ($cor = 0.55; p= 4.11 \cdot 10^{-44}$; Fig.~\ref{methylation}).
+
+\subsection{Copy Number Alteration and mRNA Expression}
+
+Another way mRNA expression could be modified is through copy number alteration.
+As seen in Fig.~\ref{cnv}, no significant difference between the copy number levels could be shown (one-way independent ANOVA; $p > 0.05$).
+\\
+\endcountem 
 (Results word count: \thewordcount{})

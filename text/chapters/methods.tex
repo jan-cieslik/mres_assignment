@@ -6,9 +6,33 @@
 
 The Cancer Genome Atlas (TCGA) dataset for breast cancer (BRCA)\cite{Ciriello2015} was acquired from the Xena platform \cite{Goldman2018} and from cBioPortal \cite{Cerami2012}.
 
-\subsection{Identification of a possible novel prognostic marker}
+\subsection{Data Pre-Processing and Normalization}
+
+Some data is downloaded after pre-processing steps have already been performed.
+I will outline all important data pre-processing steps to give a complete representation of the resulting data.
+
+\subsubsection*{RNA-Seq}
+
+Transcript abundance is calculated with RSEM (RNA-Seq by Expectation Maximization) and then transformed into z-scores (distance from the median measured in multiples of the standard deviation).
+The reference for median and standard deviation is generated only from diploid tumour samples.
+
+\subsubsection*{Methylation}
+
+Methylation data from the Illumina Infinium HumanMethylation450 BeadChip (Methylation450k) were transformed into beta values ranging from 0 to 1.
+A higher beta value represents a higher level of DNA methylation.
+Methlyation probes are annotated with their corresponding gene symbol.
+The data is then reduced to only contain one methylation probe per gene, keeping only the probe with the strongest anti-correlation with the corresponding RNA-Seq data.
+
+\subsubsection*{Copy Number}
+
+Copy number data was obtained via a whole genome microarray.
+The raw data was processing using the GISTIC2 (Genomic Identification of Significant Targets in Cancer) pipeline.
+Finally, the resulting values were grouped by thresholds and transformed into one of five levels from deep deletion (-2) to high-level amplification (+2).
+
+\subsection{Identification of a Possible Novel Prognostic Marker}
+
 A multivariate Cox proportional hazards regression model was created with data from 1218 breast cancer patients.
-Over all survival was defined as the dependent variable and mRNA z-scores (as determined by RNA sequencing from the primary tumour) together with age and tumour stage (I/II as low; III/IV as high) as the independent variables.
+Overall survival was defined as the dependent variable and mRNA z-scores (as determined by RNA sequencing from the primary tumour) together with age and tumour stage (I/II as low; III/IV as high) as the independent variables.
 The calculated p-values were corrected with the false discovery rate (FDR) method and are shown as q-values.
 
 \subsection{Survival Analysis}
@@ -18,11 +42,12 @@ A logrank test and an associated Kaplan-Meier plot were generated for the two su
 
 \subsection{Methylation and mRNA Expression Correlation}
 
-Methylation beta-values from the Illumina HumanMethylation450 BeadChip were correlated against the mRNA z-scores utilizing the spearman's rank correlation.
+Methylation beta\ values were correlated against the mRNA z-scores utilizing the spearman's rank correlation.
 
 \subsection{Copy Number and mRNA Expression}
 
-Putative copy-number alteration data (GISTIC2) were obtained in an already transformed format ordering the data in five levels from deep deletion (-2) to high-level amplification (+2).
-The data was then correlated (spearman's rank correlation) against the mRNA z-scores.
-\endcountem \\
+A chart with multiple box plots (one per copy number threshold) were generated displaying the corresponding mRNA z-scores.
+To test for dependence of mRNA expression on copy number I performed a one-way independent ANOVA (analysis of variance).
+\\
+\endcountem
 (Methods word count: \thewordcount{})
