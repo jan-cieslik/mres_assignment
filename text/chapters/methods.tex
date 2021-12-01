@@ -4,7 +4,7 @@
 
 \subsection{Data Sources}
 
-The Cancer Genome Atlas (TCGA) dataset for breast cancer (BRCA)\cite{Ciriello2015} was acquired from the Xena platform \cite{Goldman2018} and from cBioPortal \cite{Cerami2012}.
+The Cancer Genome Atlas (TCGA) dataset for breast cancer (BRCA)\cite{Ciriello2015} was acquired from the Xena platform \cite{Goldman2018}.
 
 \subsection{Data Pre-Processing and Normalization}
 
@@ -18,8 +18,8 @@ The reference for median and standard deviation is generated only from diploid t
 
 \subsubsection*{Methylation}
 
-Methylation data from the Illumina Infinium HumanMethylation450 BeadChip (Methylation450k) were transformed into beta values ranging from 0 to 1.
-A higher beta value represents a higher level of DNA methylation.
+Methylation data from the Illumina Infinium HumanMethylation450 BeadChip (Methylation450k) were transformed into $\beta$ values ranging from 0 to 1.
+A higher $\beta$ value indicates a higher level of DNA methylation.
 Methlyation probes are annotated with their corresponding gene symbol.
 The data is then reduced to only contain one methylation probe per gene, keeping only the probe with the strongest anti-correlation with the corresponding RNA-Seq data.
 
@@ -42,7 +42,10 @@ A logrank test and an associated Kaplan-Meier plot were generated for the two su
 
 \subsection{Methylation and mRNA Expression Correlation}
 
-Methylation beta\ values were correlated against the mRNA z-scores utilizing the spearman's rank correlation.
+Methylation values were tested for normal distribution using Shapiro-Wilk normality test.
+The $\beta$ values fail to show a normal distribution (e.g. cg07979271: ${p < 2.2e-16}$), so a non-parametric test was used for correlation.
+Methylation $\beta$ values were correlated against the mRNA z-scores using spearman.
+
 
 \subsection{Copy Number and mRNA Expression}
 
