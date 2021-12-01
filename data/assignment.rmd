@@ -1,16 +1,24 @@
 ---
 title: "Searching for a novel biomarker in breast cancer (BRCA)"
 output:
-  pdf_document: default
+  pdf_document: 
+    keep_tex: yes
   html_notebook: default
   html_document:
     df_print: paged
 ---
+```{r, include=FALSE}
+#Libraries for creation of rmarkdown output, not required for actual calculations
+library(rmarkdown)
+library(knitr)
+knitr::opts_chunk$set(tidy.opts=list(width.cutoff=80), tidy=TRUE)
+```
+
 # Setup
 ## Bash
-Download datasets from Xena Browser and cBioportal (TCGA BRCA)
+Download datasets from Xena Browser (TCGA BRCA)
 https://xenabrowser.net/datapages/?cohort=TCGA%20Breast%20Cancer%20(BRCA)
-```{bash, engine.opts='-l', message=FALSE, warning=FALSE, error=FALSE, results='hide', include=FALSE}
+```{bash, engine.opts='-l', message=FALSE, warning=FALSE, error=FALSE, results='hide'}
 wget -O survival.tsv https://tcga-xena-hub.s3.us-east-1.amazonaws.com/download/survival%2FBRCA_survival.txt
 wget -O clinical_matrix.tsv https://tcga-xena-hub.s3.us-east-1.amazonaws.com/download/TCGA.BRCA.sampleMap%2FBRCA_clinicalMatrix
 wget -O HiSeqV2.tsv.gz https://tcga-xena-hub.s3.us-east-1.amazonaws.com/download/TCGA.BRCA.sampleMap%2FHiSeqV2.gz
@@ -20,18 +28,15 @@ wget -O CNV_thresholded.tsv.gz https://tcga-xena-hub.s3.us-east-1.amazonaws.com/
 ```
 
 Unzip the downloaded files
-```{bash, engine.opts='-l', include=FALSE}
-tar -xf BRCA.tar.gz
+```{bash, engine.opts='-l'}
 gunzip HiSeqV2.tsv.gz
 gunzip CNV_thresholded.tsv.gz
 gunzip Methylation450k.tsv.gz
 ```
 ## R
 Load libraries
-```{r, message=FALSE, warning=FALSE, include=FALSE}
+```{r, message=FALSE, warning=FALSE, results='hide'}
 library(survival)
-library(knitr)
-library(rmarkdown)
 library(data.table)
 options(datatable.fread.datatable=FALSE)
 ```
@@ -47,7 +52,6 @@ rna.data <- as.matrix(rna.data)
 
 surv.data <- read.table("survival.tsv", sep="\t", header=T, row.names=1) 
 clin.data <- read.table("clinical_matrix.tsv", sep="\t", header=T, row.names=1, quote = "")
-#Replace NA OS values with 0
 ```
 
 Display data.frames for illustration purposes
@@ -247,6 +251,13 @@ results.meth<-results.meth[order(results.meth[,3], decreasing=F),,drop=FALSE]
 rm("i")
 ```
 
+```{r, include=FALSE}
+for(i in 1:5){
+  results.meth[,i] <- signif(results.meth[,i], digits=3)
+}
+write.table(results.meth, file="results.meth.csv", eol = "\\\\ \n", sep = " & ", quote=FALSE)
+```
+
 Display results
 ```{r, results='asis'}
 kable(results.meth)
@@ -297,4 +308,9 @@ aov(RNA ~ CNV, data = cnv.rna.df)
 boxplot(RNA~CNV, data=cnv.rna.df,
    xlab="Copy Number", ylab="mRNA Level")
 #dev.off()
+```
+
+Save workspace 
+```{r}
+save.image("assignment.RData")
 ```
