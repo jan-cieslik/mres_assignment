@@ -1,7 +1,9 @@
-\documentclass[12pt,a4paper]{article}
+\documentclass[11pt,a4paper]{article}
 \bibliographystyle{ieeetr}
 \linespread{1.25}
 \usepackage{graphicx}
+\usepackage{biblatex} 
+\addbibresource{literature.bib}
 \usepackage{ragged2e}
 \usepackage{geometry}
 \usepackage{marvosym}
@@ -10,14 +12,17 @@
 \usepackage{textcomp}
 \usepackage{hyperref}
 \usepackage{rotating}
+\usepackage{pdfpages}
  \geometry{
  a4paper,
  %total={170mm,257mm},
- left=35mm,
- right=25mm,
+ left=20mm,
+ right=20mm,
  top=25mm,
  bottom=25mm,
  } 
+ \usepackage{fontspec}
+\setmainfont{Calibri}
 \input{scripts/wordcount.tex}
 \begin{document}
 \pagenumbering{gobble}
@@ -47,10 +52,13 @@
 
 \newpage
 \input{figures/figures.tex}
-
+ 
 \newpage
-\bibliography{literature}  
+\printbibliography
 
 \newpage
 \pagenumbering{gobble} 
+
+\includepdf[pages=-]{../data/assignment.pdf}
+
 \end{document}

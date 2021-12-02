@@ -11,19 +11,19 @@ The Cancer Genome Atlas (TCGA) dataset for breast cancer (BRCA)\cite{Ciriello201
 Some data is downloaded after pre-processing steps have already been performed.
 I will outline all important data pre-processing steps to give a complete representation of the resulting data.
 
-\subsubsection*{RNA-Seq}
+\subsubsection{RNA-Seq}
 
-Transcript abundance is calculated with RSEM (RNA-Seq by Expectation Maximization) and then transformed into z-scores (distance from the median measured in multiples of the standard deviation).
-The reference for median and standard deviation is generated only from diploid tumour samples.
+Gene expression profiles from the Illumina HiSeq 2000 RNA sequencing platform were aligned and annotated using reference transcripts based on the hg19 reference genome.
+Transcript abundance is calculated with RSEM (RNA-Seq by Expectation Maximization) and transformed to log2(x+1) normalized values.
 
-\subsubsection*{Methylation}
+\subsubsection{Methylation}
 
-Methylation data from the Illumina Infinium HumanMethylation450 BeadChip (Methylation450k) were transformed into $\beta$ values ranging from 0 to 1.
+Methylation data from the Illumina Infinium HumanMethylation450 BeadChip (Methylation450k) was transformed into $\beta$ values ranging from 0 to 1.
 A higher $\beta$ value indicates a higher level of DNA methylation.
-Methlyation probes are annotated with their corresponding gene symbol.
-The data is then reduced to only contain one methylation probe per gene, keeping only the probe with the strongest anti-correlation with the corresponding RNA-Seq data.
+The probes were aligned to the hg19 reference genome.
+Methlyation probes are then annotated with their corresponding gene symbol.
 
-\subsubsection*{Copy Number}
+\subsubsection{Copy Number}
 
 Copy number data was obtained via a whole genome microarray.
 The raw data was processing using the GISTIC2 (Genomic Identification of Significant Targets in Cancer) pipeline.
@@ -32,25 +32,31 @@ Finally, the resulting values were grouped by thresholds and transformed into on
 \subsection{Identification of a Possible Novel Prognostic Marker}
 
 A multivariate Cox proportional hazards regression model was created with data from 1218 breast cancer patients.
-Overall survival was defined as the dependent variable and mRNA z-scores (as determined by RNA sequencing from the primary tumour) together with age and tumour stage (I/II as low; III/IV as high) as the independent variables.
+Overall survival was defined as the dependent variable and mRNA log values (as determined by RNA sequencing from the primary tumour) together with age and tumour stage (I/II as low; III/IV as high) as the independent variables.
 The calculated p-values were corrected with the false discovery rate (FDR) method and are shown as q-values.
 
 \subsection{Survival Analysis}
 
-The patient population was divided into SPIB-high and SPIB-low divided by the median of the SPIB mRNA expression.
+The patient population was divided into SPIB high and SPIB low divided by the median of the SPIB mRNA expression.
 A logrank test and an associated Kaplan-Meier plot were generated for the two subpopulations.
 
 \subsection{Methylation and mRNA Expression Correlation}
 
 Methylation values were tested for normal distribution using Shapiro-Wilk normality test.
-The $\beta$ values fail to show a normal distribution (e.g. cg07979271: ${p < 2.2e-16}$), so a non-parametric test was used for correlation.
-Methylation $\beta$ values were correlated against the mRNA z-scores using spearman.
-
+The $\beta$ values fail to show a normal distribution (e.g. cg07979271: ${p < 2.2 \cdot 10^{-16}}$), so a non-parametric test was used for correlation.
+Methylation $\beta$ values were correlated against the mRNA log values using spearman.
+P-values were corrected for multiple testing by using FDR and transformed into q-values.
+The most anti-correlated methylation site is then shown as a scatter plot against the mRNA level.
 
 \subsection{Copy Number and mRNA Expression}
 
-A chart with multiple box plots (one per copy number threshold) were generated displaying the corresponding mRNA z-scores.
+A chart with multiple box plots (one per copy number threshold) was generated displaying the corresponding mRNA log values.
 To test for dependence of mRNA expression on copy number I performed a one-way independent ANOVA (analysis of variance).
+
+\subsection{mRNA Co-Expression}
+
+mRNA expression values were correlated with the corresponding expression values of SPIB using spearman.
+The p-values were adjusted for multiple testing by using FDR and transformed into q-values.
 \\
 \endcountem
 (Methods word count: \thewordcount{})

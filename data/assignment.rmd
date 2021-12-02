@@ -1,5 +1,5 @@
 ---
-title: "Searching for a novel biomarker in breast cancer (BRCA)"
+title: "Appendix MRes 2021 Assignment (Jan-Philipp Cieslik)"
 output:
   pdf_document: 
     keep_tex: yes
@@ -14,18 +14,25 @@ library(knitr)
 knitr::opts_chunk$set(tidy.opts=list(width.cutoff=80), tidy=TRUE)
 ```
 
-# Setup
-## Bash
-Download datasets from Xena Browser (TCGA BRCA)
+# Setup - Bash (Terminal)
+Download data sets from Xena Browser (TCGA BRCA) \
 https://xenabrowser.net/datapages/?cohort=TCGA%20Breast%20Cancer%20(BRCA)
+
 ```{bash, engine.opts='-l', message=FALSE, warning=FALSE, error=FALSE, results='hide'}
-wget -O survival.tsv https://tcga-xena-hub.s3.us-east-1.amazonaws.com/download/survival%2FBRCA_survival.txt
-wget -O clinical_matrix.tsv https://tcga-xena-hub.s3.us-east-1.amazonaws.com/download/TCGA.BRCA.sampleMap%2FBRCA_clinicalMatrix
-wget -O HiSeqV2.tsv.gz https://tcga-xena-hub.s3.us-east-1.amazonaws.com/download/TCGA.BRCA.sampleMap%2FHiSeqV2.gz
-wget -O Methylation450k.tsv.gz https://tcga-xena-hub.s3.us-east-1.amazonaws.com/download/TCGA.BRCA.sampleMap%2FHumanMethylation450.gz
-wget -O Methylation450k_probemap.tsv https://tcga-xena-hub.s3.us-east-1.amazonaws.com/download/probeMap%2FilluminaMethyl450_hg19_GPL16304_TCGAlegacy
-wget -O CNV_thresholded.tsv.gz https://tcga-xena-hub.s3.us-east-1.amazonaws.com/download/TCGA.BRCA.sampleMap%2FGistic2_CopyNumber_Gistic2_all_thresholded.by_genes.gz
+wget -O survival.tsv \
+https://tcga-xena-hub.s3.us-east-1.amazonaws.com/download/survival%2FBRCA_survival.txt
+wget -O clinical_matrix.tsv \
+https://tcga-xena-hub.s3.us-east-1.amazonaws.com/download/TCGA.BRCA.sampleMap%2FBRCA_clinicalMatrix
+wget -O HiSeqV2.tsv.gz \
+https://tcga-xena-hub.s3.us-east-1.amazonaws.com/download/TCGA.BRCA.sampleMap%2FHiSeqV2.gz
+wget -O Methylation450k.tsv.gz \
+https://tcga-xena-hub.s3.us-east-1.amazonaws.com/download/TCGA.BRCA.sampleMap%2FHumanMethylation450.gz
+wget -O Methylation450k_probemap.tsv \
+https://tcga-xena-hub.s3.us-east-1.amazonaws.com/download/probeMap%2FilluminaMethyl450_hg19_GPL16304_TCGAlegacy
+wget -O CNV_thresholded.tsv.gz \
+https://tcga-xena-hub.s3.us-east-1.amazonaws.com/download/TCGA.BRCA.sampleMap%2FGistic2_CopyNumber_Gistic2_all_thresholded.by_genes.gz
 ```
+
 
 Unzip the downloaded files
 ```{bash, engine.opts='-l'}
@@ -33,17 +40,21 @@ gunzip HiSeqV2.tsv.gz
 gunzip CNV_thresholded.tsv.gz
 gunzip Methylation450k.tsv.gz
 ```
-## R
+# Setup - R
 Load libraries
 ```{r, message=FALSE, warning=FALSE, results='hide'}
 library(survival)
+#with the given option the fread function from data.table behaves like read.table but is much quicker and memory efficient
 library(data.table)
 options(datatable.fread.datatable=FALSE)
 ```
 
-Load data and adjust row names.
+# Data Loading - RNA/Survival/Clinical
+Load data and adjust row names
 ```{r}
-#I use check.names=FALSE to prevent the change from hyphens to dots
+#set the gene of interest
+gene <- "SPIB"
+#using check.names=FALSE to prevent the change from hyphens to dots
 rna.data <- fread("HiSeqV2.tsv", sep="\t",head=TRUE, stringsAsFactors =FALSE, check.names=FALSE)
 
 rownames(rna.data) <- make.unique(rna.data[, 1])
@@ -52,13 +63,6 @@ rna.data <- as.matrix(rna.data)
 
 surv.data <- read.table("survival.tsv", sep="\t", header=T, row.names=1) 
 clin.data <- read.table("clinical_matrix.tsv", sep="\t", header=T, row.names=1, quote = "")
-```
-
-Display data.frames for illustration purposes
-```{r, results='asis'}
-kable(rna.data[1:5,1:5], caption="rna.data DF")
-kable(surv.data[1:5,], caption="surv.data DF")
-kable(clin.data[7:13, 1:3], caption="clin.data DF")
 ```
 
 Generate survival data
@@ -70,7 +74,7 @@ brca.os <- Surv(os.time,os.event)
 rm("os.time", "os.event")
 ```
 
-## Univariate
+# Univariate Regression Analysis (RNA/Survival)
 Create empty data frame for results
 ``` {r}
 rna.survival.univariate<-array(NA, c(nrow(rna.data),4))
@@ -84,10 +88,9 @@ Iterate through all genes and generate cox model
 for(i in 1:nrow(rna.data))
 {
   #Check if less than 2 samples are available for correlation
-  if(-(sum(is.na(rna.data[i,])) - length(rna.data[i,])) < 2){
+  if(sum(!is.na(rna.data[i,])) < 2){
     next
   }
-  #coxph(brca.os ~ as.numeric(rna.data["SPIB",]))
  coxphmodel <- coxph(brca.os ~ as.numeric(rna.data[i,]))
  summary <-summary(coxphmodel)
  rna.survival.univariate$HR[i] <- summary$coef[1,2]
@@ -95,9 +98,10 @@ for(i in 1:nrow(rna.data))
  rna.survival.univariate$UCI[i] <- summary$conf.int[1,4]
  rna.survival.univariate$PVAL[i] <- summary$coef[1,5]
 }
-rna.survival.univariate<-as.data.frame(rna.survival.univariate)
-rna.survival.univariate$FDR<-p.adjust(rna.survival.univariate$PVAL,method="fdr")
-rna.survival.univariate<-rna.survival.univariate[order(rna.survival.univariate$FDR, decreasing=F),]
+rna.survival.univariate <- as.data.frame(rna.survival.univariate)
+rna.survival.univariate$FDR <- p.adjust(rna.survival.univariate$PVAL,method="fdr")
+rna.survival.univariate <- 
+  rna.survival.univariate[order(rna.survival.univariate$FDR, decreasing=F),]
 
 #Remove local variables
 rm("summary", "i")
@@ -106,12 +110,14 @@ Print results of univariate analysis
 ```{r, results='asis'}
 kable(rna.survival.univariate[1:10,])
 ```
-## Multivariate preparation
-Clinical data exploration
+# Multivariate Regression Analysis (RNA/Survival/Clinical)
+Clinical data preparation
 ```{r}
-#Subset clinical data to patients that also have RNA data
+#subset clinical data to patients that also have RNA data
 clin.data<-clin.data[colnames(rna.data),]
+#create age variable
 age<-as.numeric(clin.data$age_at_initial_pathologic_diagnosis)
+#create stage high/low variable
 x3<-grep("III",clin.data$Converted_Stage_nature2012)
 x4<-grep("IV",clin.data$Converted_Stage_nature2012)
 stage.high<-rep(0,nrow(clin.data))
@@ -121,13 +127,6 @@ stage.high[c(x3,x4)]<-1
 rm("x3", "x4")
 ```
 
-Run separate regression for overall survival against age or stage (high/low).
-```{r}
-coxph(brca.os ~ age)
-coxph(brca.os ~ stage.high)
-```
-
-## Multivariate calculate
 Create empty data frame for results
 ```{r}
 rna.survival.multivariate<-array(NA, c(nrow(rna.data),4))
@@ -141,7 +140,7 @@ Iterate through all genes to generate multivariate regression model
 for(i in 1:nrow(rna.data))
 {
   #Check if less than 2 samples are available for correlation
-  if(-(sum(is.na(rna.data[i,])) - length(rna.data[i,])) < 2){
+  if(sum(!is.na(rna.data[i,])) < 2){
     next
   }
  coxphmodel <- coxph(brca.os ~ rna.data[i,]+age+stage.high)
@@ -151,9 +150,10 @@ for(i in 1:nrow(rna.data))
  rna.survival.multivariate$UCI[i] <- summary$conf.int[1,4]
  rna.survival.multivariate$PVAL[i] <- summary$coef[1,5]
 }
-rna.survival.multivariate<-as.data.frame(rna.survival.multivariate)
-rna.survival.multivariate$FDR<-p.adjust(rna.survival.multivariate$PVAL,method="fdr")
-rna.survival.multivariate<-rna.survival.multivariate[order(rna.survival.multivariate$FDR, decreasing=F),]
+rna.survival.multivariate <- as.data.frame(rna.survival.multivariate)
+rna.survival.multivariate$FDR <- p.adjust(rna.survival.multivariate$PVAL,method="fdr")
+rna.survival.multivariate <-
+  rna.survival.multivariate[order(rna.survival.multivariate$FDR, decreasing=F),]
 #Remove local variables
 rm("summary", "i")
 ```
@@ -162,9 +162,8 @@ Print results of multivariate analysis
 ```{r, results='asis'}
 kable(rna.survival.multivariate[1:10,])
 ```
-## Multivariate result
+
 ```{r}
-gene <- "SPIB"
 gene.info <- rna.survival.multivariate[gene,]
 gene.high <- as.numeric(rna.data[gene,]>median(rna.data[gene,]))
 
@@ -178,19 +177,23 @@ plot.text <- paste0("HR = ",round(gene.info["HR"], digits = 2)," (q = ",round(ge
 plot.text2 <- paste0("log-rank: p = ",round(gene.high.logrank.p, digits = 2))
 plot.legend <- c(paste0(gene,"-high"),paste0(gene,"-low"))
 
-#pdf(file="km_plot.pdf", width=7.5, height=5)
-plot(survfit(brca.os ~ gene.high),col=c("black","red"),lwd=2,mark.time=TRUE, xlab="Time (Years)", ylab="Overall Survival", xscale = 365.25, xmax = 15*365.25)#, main=plot.title
+
+plot(survfit(brca.os ~ gene.high), col=c("black","red"), lwd=2, 
+     mark.time=TRUE, xlab="Time (Years)", ylab="Overall Survival",
+     xscale = 365.25, xmax = 15*365.25)
 legend("topright",legend=plot.legend,col=c("red","black"),lwd=2)
 text(0,0.1,plot.text, adj = c(0,0))
 text(0,0,plot.text2, adj = c(0,0))
-#dev.off()
+
+#delete local variables
 rm("plot.text", "plot.text2", "plot.legend")
 ```
 
 # Methylation data
 Load methylation data
 ```{r}
-meth.annotation <- read.table("Methylation450k_probemap.tsv", sep="\t", header=T, comment.char="")
+meth.annotation <- read.table("Methylation450k_probemap.tsv", sep="\t",
+                              header=T, comment.char="")
 meth.data <- fread("Methylation450k.tsv", sep="\t", header=TRUE)
 
 row.names(meth.data) <- meth.data[,1]
@@ -205,16 +208,18 @@ kable(meth.data[1:3,1:3])
 kable(meth.annotation[1:3,])
 ```
 
-Reduce dataset to samples that have rna, methylation and survival data.
+subset data set to samples that have rna, methylation and survival data.
 ```{r}
 samples <- intersect(colnames(meth.data),colnames(rna.data))
 meth.intersect.rna <- meth.data[,samples]
 rna.intersect.meth <- rna.data[,samples]
-surv.intersect.rna.meth <- surv.data[intersect(rownames(surv.data),colnames(rna.intersect.meth)),]
+surv.intersect.rna.meth <-
+  surv.data[intersect(rownames(surv.data),colnames(rna.intersect.meth)),]
 
 meth.intersect.rna <- as.matrix(meth.intersect.rna)
 rna.intersect.meth <- as.matrix(rna.intersect.meth)
-surv.intersect.rna.meth <- as.data.frame(surv.intersect.rna.meth[colnames(meth.intersect.rna),])
+surv.intersect.rna.meth <-
+  as.data.frame(surv.intersect.rna.meth[colnames(meth.intersect.rna),])
 
 meth.intersect.rna <-  meth.intersect.rna[meth.probes,,drop=FALSE]
 
@@ -231,23 +236,29 @@ meth.intersect.rna <- meth.intersect.rna[which(exclude==0),, drop=FALSE]
 results.meth<-array(NA,c(nrow(meth.intersect.rna),5))
 rownames(results.meth)<-rownames(meth.intersect.rna)
 colnames(results.meth)<-c("Cor","pval","qval","Mean.high","Mean.low")
-gene.high.meth.rna <- as.numeric(as.numeric(rna.intersect.meth[gene,])>median(as.numeric(rna.intersect.meth[gene,])))
+gene.high.meth.rna <- as.numeric(
+  as.numeric(rna.intersect.meth[gene,]) > median( as.numeric(rna.intersect.meth[gene,]) )
+  )
+
 #remove local variables
 rm("na.count", "exclude")
 ```
 
-Iterate through every methylation site of selected gene and perform correlation
+Iterate through every methylation site of the selected gene and perform correlation.
 ```{r}
 for (i in 1:nrow(meth.intersect.rna))
 {
-  results.meth[i,1] <- cor.test(as.numeric(rna.intersect.meth[gene,]),as.numeric(meth.intersect.rna[i,]), use="c", method = "spearman",exact=FALSE)$est
-  results.meth[i,2] <- cor.test(as.numeric(rna.intersect.meth[gene,]),as.numeric(meth.intersect.rna[i,]), use="c", method = "spearman",exact=FALSE)$p.value
+  results.meth[i,1] <-
+    cor.test(as.numeric(rna.intersect.meth[gene,]),as.numeric(meth.intersect.rna[i,]), use="c", method = "spearman",exact=FALSE)$est
+  results.meth[i,2] <-
+    cor.test(as.numeric(rna.intersect.meth[gene,]),as.numeric(meth.intersect.rna[i,]), use="c", method = "spearman",exact=FALSE)$p.value
 }
 results.meth[,4] <- apply(meth.intersect.rna[,which(gene.high.meth.rna==1), drop=FALSE],1,mean,na.rm=T)
 results.meth[,5] <- apply(meth.intersect.rna[,which(gene.high.meth.rna==0), drop=FALSE],1,mean,na.rm=T)
 results.meth[,3] <- p.adjust(results.meth[,2],method="fdr")
 results.meth<-results.meth[order(results.meth[,3], decreasing=F),,drop=FALSE]
 
+#remove local variables
 rm("i")
 ```
 
@@ -264,17 +275,19 @@ kable(results.meth)
 ```
 
 ```{r}
+#set the methylation site of interest
 meth.site = "cg07979271"
 plot.title <- paste0(gene, " in BRCA")
-plot.text <- paste0("cor = ",round(results.meth[meth.site, "Cor"], digits = 2)," (q = ",format(results.meth[meth.site, "qval"], scientific = TRUE),")")
+plot.text <- paste0("cor = ",round(results.meth[meth.site, "Cor"], digits = 2),
+                    " (q = ",format(results.meth[meth.site, "qval"], scientific = TRUE),")")
 plot.legend <- c(paste0(gene,"-high"),paste0(gene,"-low"))
 
-#pdf(file="methylation.pdf", width=7.5, height=5)
-par(mar = c(4, 4, 0.1, 0.1))    
-plot(as.numeric(meth.intersect.rna[meth.site,]),as.numeric(rna.intersect.meth[gene,]), xlab=paste0("Methylation Level ", meth.site), ylab="mRNA Level")
+ 
+plot(as.numeric(meth.intersect.rna[meth.site,]), as.numeric(rna.intersect.meth[gene,]), 
+     xlab=paste0("Methylation Level (", meth.site,")"), ylab="mRNA Level")
 text(0.45,0,plot.text, adj = c(0,0.5))
 abline(lm(rna.intersect.meth[gene,] ~ meth.intersect.rna[meth.site,]))
-#dev.off()
+
 ```
 
 # CNV data
@@ -284,7 +297,7 @@ cnv.data <- fread("CNV_thresholded.tsv", sep="\t", header=T)
 rownames(cnv.data) <- make.unique(cnv.data[,1])
 cnv.data <- cnv.data[,-1]
 cnv.data <- as.matrix(cnv.data)
-#Reduce data set to entries that are also available in the rna dataset
+#subset data set to entries that are also available in the RNA data set
 cols.intersect <- intersect(colnames(cnv.data), colnames(rna.data))
 row.intersect <- intersect(rownames(cnv.data), rownames(rna.data))
 cnv.intersect.rna <- cnv.data[row.intersect, cols.intersect]
@@ -300,14 +313,63 @@ cnv.rna.df[which(cnv.rna.df$CNV == -1), "CNV"] <- "shallow loss"
 cnv.rna.df[which(cnv.rna.df$CNV == 0), "CNV"] <- "diploid"
 cnv.rna.df[which(cnv.rna.df$CNV == 1), "CNV"] <- "low-level gain"
 cnv.rna.df[which(cnv.rna.df$CNV == 2), "CNV"] <- "high-level gain"
-cnv.rna.df$CNV <- factor(cnv.rna.df$CNV, levels=c("shallow loss", "diploid", "low-level gain", "high-level gain"), ordered=TRUE)
+#"deep loss" is missing on purpose, as no entry falls into this category for our candidate gene
+cnv.rna.df$CNV <- factor(cnv.rna.df$CNV,
+                         levels=c("shallow loss", "diploid", "low-level gain", "high-level gain"),
+                         ordered=TRUE)
 
 aov(RNA ~ CNV, data = cnv.rna.df)
 
-#pdf(file="cnv.pdf", width=7.5, height=5)
 boxplot(RNA~CNV, data=cnv.rna.df,
    xlab="Copy Number", ylab="mRNA Level")
-#dev.off()
+```
+
+# mRNA correlation
+Create empty data frame for results
+```{r}
+rna.cor <-array(NA,c(nrow(rna.data),5))
+rownames(rna.cor)<-rownames(rna.data)
+colnames(rna.cor)<-c("Cor","pval","qval","Mean.high","Mean.low")
+
+gene.high.meth.rna <- as.numeric(
+  as.numeric(rna.data[gene,]) > median( as.numeric(rna.data[gene,]) )
+  )
+```
+Loop through every gene and correlate it with the candidate gene
+```{r}
+
+for (i in 1:nrow(rna.data)){
+  #Check if less than 2 samples are available for correlation
+  if(sum(!is.na(rna.data[i,]) & !is.na(rna.data[gene,])) < 2){
+    next
+  }
+  #Check if all values are zero
+  if(sum(rna.data[i,]) == 0){
+    next
+  }
+  if(sum(!is.na(rna.data[i,])))
+  result.temp <-
+    cor.test(as.numeric(rna.data[gene,]), as.numeric(rna.data[i,]), use="c", method = "spearman", exact=FALSE)
+  rna.cor[i, 1:2] <- c(result.temp$est, result.temp$p.value)
+}
+rna.cor[,4] <- apply(rna.data[,which(gene.high.meth.rna==1), drop=FALSE],1,mean,na.rm=T)
+rna.cor[,5] <- apply(rna.data[,which(gene.high.meth.rna==0), drop=FALSE],1,mean,na.rm=T)
+rna.cor[,3] <- p.adjust(rna.cor[,2],method="fdr")
+rna.cor <- rna.cor[order(rna.cor[,3], decreasing=F),,drop=FALSE]
+```
+Display results
+```{r, results='asis'}
+kable(rna.cor[1:5,])
+```
+
+```{r, include=FALSE}
+#save results (for LaTeX table generation)
+for(i in 1:5){
+  rna.cor[,i] <- signif(rna.cor[,i], digits=3)
+}
+rna.cor2 <- rna.cor[order(rna.cor[,1], decreasing=F),,drop=FALSE]
+write.table(rna.cor2, file="results.rna2.csv", eol = "\\\\ \n", sep = " & ", quote=FALSE)
+rm("rna.cor2")
 ```
 
 Save workspace 
