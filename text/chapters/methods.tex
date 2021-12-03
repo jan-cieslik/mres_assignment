@@ -32,18 +32,18 @@ Finally, the resulting values were grouped by thresholds and transformed into on
 \subsection{Identification of a Possible Novel Prognostic Marker}
 
 A multivariate Cox proportional hazards regression model was created with data from 1218 breast cancer patients.
-Overall survival was defined as the dependent variable and mRNA log values (as determined by RNA sequencing from the primary tumour) together with age and tumour stage (I/II as low; III/IV as high) as the independent variables.
+Overall survival was defined as the dependent (outcome) variable and mRNA log values (as determined by RNA sequencing from the primary tumour) together with age and tumour stage (I/II as low; III/IV as high) as the independent variables.
 The calculated p-values were corrected with the false discovery rate (FDR) method and are shown as q-values.
 
 \subsection{Survival Analysis}
 
-The patient population was divided into SPIB high and SPIB low divided by the median of the SPIB mRNA expression.
+The patient population was divided into SPIB-high and SPIB-low based on the median of the SPIB mRNA expression.
 A logrank test and an associated Kaplan-Meier plot were generated for the two subpopulations.
 
 \subsection{Methylation and mRNA Expression Correlation}
 
 Methylation values were tested for normal distribution using Shapiro-Wilk normality test.
-The $\beta$ values fail to show a normal distribution (e.g. cg07979271: ${p < 2.2 \cdot 10^{-16}}$), so a non-parametric test was used for correlation.
+The $\beta$ values fail to show a normal distribution (e.g., cg07979271: ${p < 2.2 \cdot 10^{-16}}$), consequently a nonparametric test was used for correlation.
 Methylation $\beta$ values were correlated against the mRNA log values using spearman.
 P-values were corrected for multiple testing by using FDR and transformed into q-values.
 The most anti-correlated methylation site is then shown as a scatter plot against the mRNA level.

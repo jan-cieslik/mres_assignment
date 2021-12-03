@@ -12,13 +12,20 @@ output:
 library(rmarkdown)
 library(knitr)
 knitr::opts_chunk$set(tidy.opts=list(width.cutoff=80), tidy=TRUE)
+
+#Snippet from https://stackoverflow.com/questions/25646333/code-chunk-font-size-in-rmarkdown-with-knitr-and-latex
+def.chunk.hook  <- knitr::knit_hooks$get("chunk")
+knitr::knit_hooks$set(chunk = function(x, options) {
+  x <- def.chunk.hook(x, options)
+  ifelse(options$size != "normalsize", paste0("\n \\", options$size,"\n\n", x, "\n\n \\normalsize"), x)
+})
 ```
 
 # Setup - Bash (Terminal)
 Download data sets from Xena Browser (TCGA BRCA) \
 https://xenabrowser.net/datapages/?cohort=TCGA%20Breast%20Cancer%20(BRCA)
 
-```{bash, engine.opts='-l', message=FALSE, warning=FALSE, error=FALSE, results='hide'}
+```{bash, engine.opts='-l', message=FALSE, warning=FALSE, error=FALSE, results='hide', size='small'}
 wget -O survival.tsv \
 https://tcga-xena-hub.s3.us-east-1.amazonaws.com/download/survival%2FBRCA_survival.txt
 wget -O clinical_matrix.tsv \
@@ -44,7 +51,8 @@ gunzip Methylation450k.tsv.gz
 Load libraries
 ```{r, message=FALSE, warning=FALSE, results='hide'}
 library(survival)
-#with the given option the fread function from data.table behaves like read.table but is much quicker and memory efficient
+#with the given option the fread function from data.table behaves like read.table
+#but is much quicker and memory efficient
 library(data.table)
 options(datatable.fread.datatable=FALSE)
 ```
@@ -55,7 +63,8 @@ Load data and adjust row names
 #set the gene of interest
 gene <- "SPIB"
 #using check.names=FALSE to prevent the change from hyphens to dots
-rna.data <- fread("HiSeqV2.tsv", sep="\t",head=TRUE, stringsAsFactors =FALSE, check.names=FALSE)
+rna.data <- fread("HiSeqV2.tsv", sep="\t", head=TRUE,
+                  stringsAsFactors =FALSE, check.names=FALSE)
 
 rownames(rna.data) <- make.unique(rna.data[, 1])
 rna.data <- rna.data[,-1]
@@ -83,7 +92,7 @@ rownames(rna.survival.univariate)<-rownames(rna.data)
 rna.survival.univariate<-as.data.frame(rna.survival.univariate)
 ```
 
-Iterate through all genes and generate cox model
+Iterate through all genes and generate Cox model
 ```{r, warning=FALSE, message=FALSE}
 for(i in 1:nrow(rna.data))
 {
@@ -108,7 +117,7 @@ rm("summary", "i")
 ```
 Print results of univariate analysis
 ```{r, results='asis'}
-kable(rna.survival.univariate[1:10,])
+kable(rna.survival.univariate[1:5,])
 ```
 # Multivariate Regression Analysis (RNA/Survival/Clinical)
 Clinical data preparation
@@ -160,7 +169,7 @@ rm("summary", "i")
 
 Print results of multivariate analysis
 ```{r, results='asis'}
-kable(rna.survival.multivariate[1:10,])
+kable(rna.survival.multivariate[1:5,])
 ```
 
 ```{r}
@@ -173,7 +182,8 @@ gene.high.logrank.p <- 1 - pchisq(gene.high.logrank$chisq, length(gene.high.logr
 print(survfit(brca.os ~ gene.high))
 
 #create survival plot
-plot.text <- paste0("HR = ",round(gene.info["HR"], digits = 2)," (q = ",round(gene.info["FDR"], digits = 5),")")
+plot.text <- paste0("HR = ",round(gene.info["HR"], digits = 2),
+                    " (q = ",round(gene.info["FDR"], digits = 5),")")
 plot.text2 <- paste0("log-rank: p = ",round(gene.high.logrank.p, digits = 2))
 plot.legend <- c(paste0(gene,"-high"),paste0(gene,"-low"))
 
@@ -249,12 +259,16 @@ Iterate through every methylation site of the selected gene and perform correlat
 for (i in 1:nrow(meth.intersect.rna))
 {
   results.meth[i,1] <-
-    cor.test(as.numeric(rna.intersect.meth[gene,]),as.numeric(meth.intersect.rna[i,]), use="c", method = "spearman",exact=FALSE)$est
+    cor.test(as.numeric(rna.intersect.meth[gene,]),as.numeric(meth.intersect.rna[i,]),
+             use="c", method = "spearman",exact=FALSE)$est
   results.meth[i,2] <-
-    cor.test(as.numeric(rna.intersect.meth[gene,]),as.numeric(meth.intersect.rna[i,]), use="c", method = "spearman",exact=FALSE)$p.value
+    cor.test(as.numeric(rna.intersect.meth[gene,]),as.numeric(meth.intersect.rna[i,]),
+             use="c", method = "spearman",exact=FALSE)$p.value
 }
-results.meth[,4] <- apply(meth.intersect.rna[,which(gene.high.meth.rna==1), drop=FALSE],1,mean,na.rm=T)
-results.meth[,5] <- apply(meth.intersect.rna[,which(gene.high.meth.rna==0), drop=FALSE],1,mean,na.rm=T)
+results.meth[,4] <- apply(meth.intersect.rna[,which(gene.high.meth.rna==1), drop=FALSE],
+                          1,mean,na.rm=T)
+results.meth[,5] <- apply(meth.intersect.rna[,which(gene.high.meth.rna==0), drop=FALSE],
+                          1,mean,na.rm=T)
 results.meth[,3] <- p.adjust(results.meth[,2],method="fdr")
 results.meth<-results.meth[order(results.meth[,3], decreasing=F),,drop=FALSE]
 
@@ -307,15 +321,19 @@ rm("cols.intersect","row.intersect")
 ```
 Calculate CNV changes in selected gene
 ```{r}
-cnv.rna.df <- data.frame(CNV = cnv.intersect.rna[gene,], RNA = rna.intersect.cnv[gene,], stringsAsFactors=FALSE)
+cnv.rna.df <- data.frame(CNV = cnv.intersect.rna[gene,],
+                         RNA = rna.intersect.cnv[gene,],
+                         stringsAsFactors=FALSE)
 cnv.rna.df[which(cnv.rna.df$CNV == -2), "CNV"] <- "deep loss"
 cnv.rna.df[which(cnv.rna.df$CNV == -1), "CNV"] <- "shallow loss"
 cnv.rna.df[which(cnv.rna.df$CNV == 0), "CNV"] <- "diploid"
 cnv.rna.df[which(cnv.rna.df$CNV == 1), "CNV"] <- "low-level gain"
 cnv.rna.df[which(cnv.rna.df$CNV == 2), "CNV"] <- "high-level gain"
-#"deep loss" is missing on purpose, as no entry falls into this category for our candidate gene
+#"deep loss" is missing on purpose,
+#as no entry falls into this category for our candidate gene
 cnv.rna.df$CNV <- factor(cnv.rna.df$CNV,
-                         levels=c("shallow loss", "diploid", "low-level gain", "high-level gain"),
+                         levels=c("shallow loss", "diploid",
+                                  "low-level gain", "high-level gain"),
                          ordered=TRUE)
 
 aov(RNA ~ CNV, data = cnv.rna.df)
@@ -349,7 +367,8 @@ for (i in 1:nrow(rna.data)){
   }
   if(sum(!is.na(rna.data[i,])))
   result.temp <-
-    cor.test(as.numeric(rna.data[gene,]), as.numeric(rna.data[i,]), use="c", method = "spearman", exact=FALSE)
+    cor.test(as.numeric(rna.data[gene,]), as.numeric(rna.data[i,]),
+             use="c", method = "spearman", exact=FALSE)
   rna.cor[i, 1:2] <- c(result.temp$est, result.temp$p.value)
 }
 rna.cor[,4] <- apply(rna.data[,which(gene.high.meth.rna==1), drop=FALSE],1,mean,na.rm=T)

@@ -1,6 +1,7 @@
-\documentclass[11pt,a4paper]{article}
+\documentclass[11pt,a4paper,hidelinks]{article}
 \bibliographystyle{ieeetr}
-\linespread{1.25}
+\usepackage{setspace}
+\doublespacing
 \usepackage{graphicx}
 \usepackage{biblatex} 
 \addbibresource{literature.bib}
@@ -18,8 +19,8 @@
  %total={170mm,257mm},
  left=20mm,
  right=20mm,
- top=25mm,
- bottom=25mm,
+ top=20mm,
+ bottom=20mm,
  } 
  \usepackage{fontspec}
 \setmainfont{Calibri}
@@ -30,9 +31,14 @@
 	\centering
 	{Imperial College London - Cancer \& Surgery}\\
 	\vspace{12cm}
-	{SPIB - A potential biomarker in breast cancer?}\\
+	{\huge{SPIB - A potential biomarker in breast cancer?}}\\
 	\vspace{3cm}
 	Jan-Philipp Cieslik (CID 02139878) \\
+	\vspace{3cm}
+	The R code is included in the appendix. \\
+	The R-Markdown notebook and the \LaTeX source files are published on GitHub. \url{https://github.com/jan-cieslik/mres_assignment}\\
+	\vspace{1cm}
+	Word Count: 1277
     
 \end{titlepage}
 
