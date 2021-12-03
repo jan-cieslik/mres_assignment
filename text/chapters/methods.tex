@@ -8,20 +8,20 @@ The Cancer Genome Atlas (TCGA) dataset for breast cancer (BRCA)\cite{Ciriello201
 
 \subsection{Data Pre-Processing and Normalization}
 
-Some data is downloaded after pre-processing steps have already been performed.
+Some data was downloaded after pre-processing steps have already been performed.
 I will outline all important data pre-processing steps to give a complete representation of the resulting data.
 
 \subsubsection{RNA-Seq}
 
 Gene expression profiles from the Illumina HiSeq 2000 RNA sequencing platform were aligned and annotated using reference transcripts based on the hg19 reference genome.
-Transcript abundance is calculated with RSEM (RNA-Seq by Expectation Maximization) and transformed to log2(x+1) normalized values.
+Transcript abundance was calculated with RSEM (RNA-Seq by Expectation Maximization) and transformed to log2(x+1) normalized values.
 
 \subsubsection{Methylation}
 
 Methylation data from the Illumina Infinium HumanMethylation450 BeadChip (Methylation450k) was transformed into $\beta$ values ranging from 0 to 1.
 A higher $\beta$ value indicates a higher level of DNA methylation.
 The probes were aligned to the hg19 reference genome.
-Methlyation probes are then annotated with their corresponding gene symbol.
+Methylation probes were then annotated with their corresponding gene symbol.
 
 \subsubsection{Copy Number}
 
@@ -32,7 +32,7 @@ Finally, the resulting values were grouped by thresholds and transformed into on
 \subsection{Identification of a Possible Novel Prognostic Marker}
 
 A multivariate Cox proportional hazards regression model was created with data from 1218 breast cancer patients.
-Overall survival was defined as the dependent (outcome) variable and mRNA log values (as determined by RNA sequencing from the primary tumour) together with age and tumour stage (I/II as low; III/IV as high) as the independent variables.
+Overall survival was defined as the dependent (outcome) variable while mRNA log values (as determined by RNA sequencing from the primary tumour) together with age and tumour stage (I/II as low; III/IV as high) were defined as the independent variables.
 The calculated p-values were corrected with the false discovery rate (FDR) method and are shown as q-values.
 
 \subsection{Survival Analysis}
